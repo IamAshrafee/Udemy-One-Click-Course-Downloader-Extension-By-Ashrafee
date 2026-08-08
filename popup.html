@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self'">
+    <style>
+        :root {
+            --primary-color: #702BD5;
+            --primary-hover: #5b23ad;
+            --text-color: #1c1d1f;
+            --bg-color: #fff;
+            --border-color: #d1d7dc;
+            --success-color: #1e8449;
+            --error-color: #b32d0f;
+        }
+
+        body {
+            width: 320px;
+            padding: 20px;
+            font-family: "Udemy Sans", "SF Pro Text", -apple-system, BlinkMacSystemFont, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            color: var(--text-color);
+            direction: ltr;
+            text-align: left;
+        }
+
+        .container {
+            text-align: left;
+            animation: fadeIn 0.3s ease-out;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-align: left;
+        }
+
+        .status-card {
+            background: #f7f9fa;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-align: left;
+        }
+
+        .status-content {
+            font-size: 14px;
+            color: #6a6f73;
+            margin: 5px 0;
+            text-align: left;
+        }
+
+        .status-badge {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .status-badge.success {
+            background: var(--success-color);
+        }
+
+        .status-badge.error {
+            background: var(--error-color);
+        }
+
+        .features-list {
+            text-align: left;
+            margin: 15px 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .features-list li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            font-size: 14px;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        .features-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .settings-button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 5px;
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-button:hover {
+            color: var(--primary-color);
+        }
+
+        .settings-panel {
+            display: none;
+            background: #f7f9fa;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .settings-panel.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <button class="settings-button" id="settingsButton" aria-label="Settings">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.73 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .43-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.49-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+        </svg>
+    </button>
+    <div class="container">
+        <h1>Udemy Course Downloader</h1>
+        
+        <div class="status-card">
+            <div class="status-title">
+                Status
+                <span class="status-badge" id="statusBadge">Connected</span>
+            </div>
+            <div class="status-content" id="statusContent">
+                Go to a Udemy video page and the download buttons will appear automatically
+            </div>
+        </div>
+
+        <ul class="features-list">
+            <li>Download a single video with one click</li>
+            <li>Download all course videos at once</li>
+            <li>Organize videos into folders</li>
+            <li>Support for high-quality videos</li>
+        </ul>
+
+        <div class="settings-panel" id="settingsPanel">
+            <div class="status-card" style="margin-top:0">
+                <div class="status-title">Settings</div>
+                <div class="status-content">
+                    <div style="margin-bottom: 10px;">
+                        <label for="prefQuality" style="display:block; margin-bottom:5px; font-weight:700;">Preferred Video Quality</label>
+                        <select id="prefQuality" style="width:100%; padding:6px; border-radius:4px; border:1px solid #d1d7dc;">
+                            <option value="highest">Always Highest (Default)</option>
+                            <option value="lowest">Always Lowest</option>
+                            <option value="2160">4K (2160p)</option>
+                            <option value="1080">1080p</option>
+                            <option value="720">720p</option>
+                            <option value="480">480p</option>
+                            <option value="360">360p</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="autoDLDelay" style="display:block; margin-bottom:5px; font-weight:700;">Auto-Download Delay (seconds)</label>
+                        <input type="number" id="autoDLDelay" value="3" min="1" max="60" style="width:100%; padding:6px; border-radius:4px; border:1px solid #d1d7dc; box-sizing:border-box;">
+                    </div>
+                    <div style="margin-top: 10px; text-align: right;">
+                        <button id="saveSettingsBtn" style="background:var(--primary-color); color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:700; cursor:pointer;">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="status-title">Statistics</div>
+                <div class="status-content">
+                    <div>Files Downloaded: <span id="downloadCount">0</span></div>
+                    <div>Total Size: <span id="downloadSize">0 MB</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>
