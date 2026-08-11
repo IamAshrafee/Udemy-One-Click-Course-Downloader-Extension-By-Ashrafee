@@ -58,9 +58,9 @@ function sanitizeFileName(name) {
         .replace(/\s+/g, ' ')           // Normalize spaces
         .trim();
 
-    // Limit length to 80 characters (leaving room for folder and extension)
+    // Limit length to 100 characters (leaving room for folder and extension)
     if (cleanName.length > 80) {
-        cleanName = cleanName.substring(0, 80).trim();
+        cleanName = cleanName.substring(0, 100).trim();
     }
 
     // Remove leading/trailing dots and spaces
