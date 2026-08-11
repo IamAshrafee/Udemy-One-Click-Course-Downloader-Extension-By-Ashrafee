@@ -1141,7 +1141,7 @@ async function saveExternalLinksAsFile(links, lectureTitle, courseName, sectionN
     const lines = ['Resources for: '+ lectureTitle, '='.repeat(40), ''];
     links.forEach(l => lines.push(`• ${l.text}\n  ${l.url}\n`));
     const content = lines.join('\n');
-    const filename = lectureTitle + ' - Resources.txt';
+    const filename = lectureTitle + '/External Links.txt';
     await downloadTextViaBackground(content, filename, courseName, sectionName);
     console.log('Saved', links.length, 'external links to:', filename);
 }
@@ -1255,7 +1255,7 @@ function handleDownloadClick() {
                         safeSendMessage({
                             action: 'ashrafee_downloadVideo',
                             url: res.url,
-                            title: res.title,
+                            title: lectureTitle + '/' + res.title,
                             courseName: courseName,
                             sectionName: sectionName
                         });
@@ -1379,7 +1379,7 @@ function handleDownloadClick() {
                         safeSendMessage({
                             action: 'ashrafee_downloadVideo',
                             url: res.url,
-                            title: res.title,
+                            title: videoTitle2 + '/' + res.title,
                             courseName: courseName,
                             sectionName: sectionName
                         });
