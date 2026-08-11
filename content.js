@@ -173,6 +173,26 @@ style.textContent = `
     @keyframes ashrafee-dl-spin {
         to { transform: rotate(360deg); }
     }
+    
+    @media (max-width: 768px) {
+        #ashrafee-downloader-toast-container {
+            top: 10px;
+            right: 10px;
+            left: 10px;
+            align-items: center;
+        }
+        .ashrafee-dl-toast {
+            min-width: unset;
+            width: 100%;
+            max-width: 100%;
+        }
+        #ashrafee-dl-status-widget {
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            justify-content: center;
+        }
+    }
 `;
 document.head.appendChild(style);
 
@@ -745,6 +765,9 @@ function extractVideoTitle() {
         'h1[data-purpose="title"]',
         '[data-purpose="curriculum-item-title"]',
         'main h1:not([data-purpose="course-header-title"])',
+        '.video-title',
+        'h1.ud-heading-xl',
+        'h2[data-purpose="lecture-title"]'
     ];
 
     // Search through all selectors - take just the direct text, not nested children
@@ -1001,7 +1024,7 @@ async function extractDOMResources() {
                 });
 
                 // 3. React internal props hack (with safe fake event to prevent crashes)
-                const reactPropsKey = Object.keys(resourceBtn).find(k => k.startsWith('__reactProps$') || k.startsWith('__reactEventHandlers$'));
+                const reactPropsKey = Object.keys(resourceBtn).find(k => k.startsWith('__reactProps$') || k.startsWith('__reactEventHandlers$') || k.startsWith('__reactFiber$'));
                 if (reactPropsKey && resourceBtn[reactPropsKey]) {
                     const props = resourceBtn[reactPropsKey];
                     const fakeEvent = {
@@ -1055,7 +1078,7 @@ async function extractDOMResources() {
             try {
                 resourceBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true }));
                 resourceBtn.click();
-                const reactPropsKey = Object.keys(resourceBtn).find(k => k.startsWith('__reactProps$') || k.startsWith('__reactEventHandlers$'));
+                const reactPropsKey = Object.keys(resourceBtn).find(k => k.startsWith('__reactProps$') || k.startsWith('__reactEventHandlers$') || k.startsWith('__reactFiber$'));
                 if (reactPropsKey && resourceBtn[reactPropsKey] && resourceBtn[reactPropsKey].onClick) {
                     resourceBtn[reactPropsKey].onClick({ preventDefault: () => {}, stopPropagation: () => {}, nativeEvent: new Event('click') });
                 }

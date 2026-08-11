@@ -6,6 +6,9 @@ let currentDownloadId = null;
 let totalDownloaded = 0;
 let totalErrors = 0;
 
+// Cross-browser support
+const browserApi = typeof browser !== 'undefined' ? browser : chrome;
+
 // Log when background script starts
 console.log('Background script loaded - Udemy One Click Course Downloader v1.1.1');
 
@@ -136,25 +139,38 @@ async function downloadM3U8(url) {
 
 // Function to fetch content with CORS handling
 async function fetchWithCORS(url, options = {}) {
-    const corsProxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-    console.log('Fetching through CORS proxy:', corsProxyUrl);
+    const proxies = [
+        `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+    ];
     
-    const response = await fetch(corsProxyUrl, {
-        ...options,
-        headers: {
-            'Accept': '*/*',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Origin': 'https://www.udemy.com',
-            'Referer': 'https://www.udemy.com/',
-            ...(options.headers || {})
+    let lastError = null;
+    
+    for (const proxyUrl of proxies) {
+        try {
+            console.log('Fetching through CORS proxy:', proxyUrl);
+            const response = await fetch(proxyUrl, {
+                ...options,
+                headers: {
+                    'Accept': '*/*',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Origin': 'https://www.udemy.com',
+                    'Referer': 'https://www.udemy.com/',
+                    ...(options.headers || {})
+                }
+            });
+            if (response.ok) return response;
+            if (response.status === 401 || response.status === 403) {
+                // If unauthorized, don't keep trying proxies
+                return response;
+            }
+        } catch (error) {
+            console.log('Proxy failed:', proxyUrl, error.message);
+            lastError = error;
         }
-    });
-
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
     }
 
-    return response;
+    throw lastError || new Error('All CORS proxies failed');
 }
 
 // Function to fetch content with retry
@@ -180,16 +196,31 @@ async function fetchWithRetry(url, options = {}, maxRetries = 3) {
                 if (directResponse.ok) {
                     return directResponse;
                 }
+                if (directResponse.status === 401 || directResponse.status === 403) {
+                    console.error(`Authentication error (${directResponse.status}). Stopping retries.`);
+                    throw new Error(`Authentication required (${directResponse.status}). Please ensure you are logged in.`);
+                }
             } catch (directError) {
+                if (directError.message && directError.message.includes('Authentication required')) {
+                    throw directError; // Rethrow auth errors
+                }
                 console.log('Direct fetch failed, trying CORS proxy...');
             }
 
             // If direct fetch fails, try through CORS proxy
-            return await fetchWithCORS(url, options);
+            const proxyResponse = await fetchWithCORS(url, options);
+            if (proxyResponse.ok) return proxyResponse;
+            if (proxyResponse.status === 401 || proxyResponse.status === 403) {
+                 throw new Error(`Authentication required (${proxyResponse.status}). Please ensure you are logged in.`);
+            }
+            throw new Error(`HTTP error! status: ${proxyResponse.status} ${proxyResponse.statusText}`);
 
         } catch (error) {
             console.error(`Attempt ${i + 1} failed:`, error);
             lastError = error;
+            if (error.message && error.message.includes('Authentication required')) {
+                throw error; // Abort retries if authentication fails
+            }
             if (i < maxRetries - 1) {
                 const delay = Math.pow(2, i) * 1000;
                 console.log(`Waiting ${delay}ms before retry...`);
