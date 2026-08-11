@@ -18,7 +18,7 @@ const NOTIF_DURATION = { success: 4000, error: 5000, info: 2500 };
 const style = document.createElement('style');
 style.textContent = `
     @import url('https://fonts.googleapis.com/css2?family=Udemy+Sans:wght@400;700&display=swap');
-    #udemy-downloader-toast-container {
+    #ashrafee-downloader-toast-container {
         position: fixed;
         top: 24px;
         right: 24px;
@@ -29,7 +29,7 @@ style.textContent = `
         z-index: 2147483647;
     }
 
-    .udemy-dl-toast {
+    .ashrafee-dl-toast {
         background: #FFFFFF;
         border: 1px solid #d1d7dc;
         border-radius: 4px;
@@ -40,15 +40,15 @@ style.textContent = `
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        animation: udemy-dl-toast-enter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        animation: ashrafee-dl-toast-enter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
-    .udemy-dl-toast-content {
+    .ashrafee-dl-toast-content {
         display: flex;
         align-items: center;
         padding: 14px 18px;
         gap: 12px;
     }
-    .udemy-dl-toast-icon {
+    .ashrafee-dl-toast-icon {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -57,42 +57,42 @@ style.textContent = `
         border-radius: 50%;
         flex-shrink: 0;
     }
-    .udemy-dl-toast-icon.success { color: #1e8449; background: #e3f9eb; }
-    .udemy-dl-toast-icon.error { color: #b32d0f; background: #fcebe9; }
-    .udemy-dl-toast-icon.info { color: #702BD5; background: #f4f0fa; }
-    .udemy-dl-toast-icon svg { width: 14px; height: 14px; fill: currentColor; }
+    .ashrafee-dl-toast-icon.success { color: #1e8449; background: #e3f9eb; }
+    .ashrafee-dl-toast-icon.error { color: #b32d0f; background: #fcebe9; }
+    .ashrafee-dl-toast-icon.info { color: #702BD5; background: #f4f0fa; }
+    .ashrafee-dl-toast-icon svg { width: 14px; height: 14px; fill: currentColor; }
     
-    .udemy-dl-toast-message {
+    .ashrafee-dl-toast-message {
         font-size: 14px;
         font-weight: 700;
         line-height: 1.4;
         color: #1c1d1f;
     }
-    .udemy-dl-toast-progress-bar {
+    .ashrafee-dl-toast-progress-bar {
         height: 3px;
         width: 100%;
         background: #e4e8eb;
     }
-    .udemy-dl-toast-progress-fill {
+    .ashrafee-dl-toast-progress-fill {
         height: 100%;
         width: 100%;
         transform-origin: left;
     }
-    .udemy-dl-toast-progress-fill.success { background: #1e8449; }
-    .udemy-dl-toast-progress-fill.error { background: #b32d0f; }
-    .udemy-dl-toast-progress-fill.info { background: #702BD5; }
+    .ashrafee-dl-toast-progress-fill.success { background: #1e8449; }
+    .ashrafee-dl-toast-progress-fill.error { background: #b32d0f; }
+    .ashrafee-dl-toast-progress-fill.info { background: #702BD5; }
 
-    @keyframes udemy-dl-toast-enter {
+    @keyframes ashrafee-dl-toast-enter {
         from { transform: translateX(120%) scale(0.9); opacity: 0; }
         to { transform: translateX(0) scale(1); opacity: 1; }
     }
-    @keyframes udemy-dl-toast-exit {
+    @keyframes ashrafee-dl-toast-exit {
         from { transform: translateX(0) scale(1); opacity: 1; }
         to { transform: translateX(120%) scale(0.9); opacity: 0; }
     }
 
     /* Floating Status Widget */
-    #udemy-dl-status-widget {
+    #ashrafee-dl-status-widget {
         position: fixed;
         bottom: 24px;
         left: 24px;
@@ -109,17 +109,17 @@ style.textContent = `
         font-weight: 700;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         z-index: 2147483647;
-        animation: udemy-dl-widget-enter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        animation: ashrafee-dl-widget-enter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
-    .udemy-dl-pulse-dot {
+    .ashrafee-dl-pulse-dot {
         width: 8px;
         height: 8px;
         border-radius: 50%;
         background-color: #702BD5;
         box-shadow: 0 0 0 0 rgba(112, 43, 213, 0.7);
-        animation: udemy-dl-pulse 1.5s infinite;
+        animation: ashrafee-dl-pulse 1.5s infinite;
     }
-    .udemy-dl-stop-btn {
+    .ashrafee-dl-stop-btn {
         background: transparent;
         color: #b32d0f;
         border: 1px solid #d1d7dc;
@@ -133,44 +133,44 @@ style.textContent = `
         align-items: center;
         gap: 6px;
     }
-    .udemy-dl-stop-btn:hover {
+    .ashrafee-dl-stop-btn:hover {
         background: #fcebe9;
     }
-    @keyframes udemy-dl-pulse {
+    @keyframes ashrafee-dl-pulse {
         0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(112, 43, 213, 0.7); }
         70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(112, 43, 213, 0); }
         100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(112, 43, 213, 0); }
     }
-    @keyframes udemy-dl-widget-enter {
+    @keyframes ashrafee-dl-widget-enter {
         from { transform: translateY(100px) scale(0.9); opacity: 0; }
         to { transform: translateY(0) scale(1); opacity: 1; }
     }
     
     /* Active Button Glow */
-    .udemy-dl-button-active {
+    .ashrafee-dl-button-active {
         background: #702BD5 !important;
         color: #FFFFFF !important;
         box-shadow: 0 0 15px rgba(112, 43, 213, 0.5) !important;
-        animation: udemy-dl-glow 2s infinite !important;
+        animation: ashrafee-dl-glow 2s infinite !important;
     }
-    @keyframes udemy-dl-glow {
+    @keyframes ashrafee-dl-glow {
         0% { box-shadow: 0 0 10px rgba(112, 43, 213, 0.3); }
         50% { box-shadow: 0 0 20px rgba(112, 43, 213, 0.7); }
         100% { box-shadow: 0 0 10px rgba(112, 43, 213, 0.3); }
     }
     
     /* Loading Spinner */
-    .udemy-dl-spinner {
+    .ashrafee-dl-spinner {
         width: 14px;
         height: 14px;
         border: 2px solid currentColor;
         border-radius: 50%;
         border-top-color: transparent;
-        animation: udemy-dl-spin 1s ease-in-out infinite;
+        animation: ashrafee-dl-spin 1s ease-in-out infinite;
         display: inline-block;
         opacity: 0.7;
     }
-    @keyframes udemy-dl-spin {
+    @keyframes ashrafee-dl-spin {
         to { transform: rotate(360deg); }
     }
 `;
@@ -184,26 +184,26 @@ const ICONS = {
 
 // Function to show notification toast
 function showNotification(message, type = 'info') {
-    let container = document.getElementById('udemy-downloader-toast-container');
+    let container = document.getElementById('ashrafee-downloader-toast-container');
     if (!container) {
         container = document.createElement('div');
-        container.id = 'udemy-downloader-toast-container';
+        container.id = 'ashrafee-downloader-toast-container';
         document.body.appendChild(container);
     }
 
     const notification = document.createElement('div');
-    notification.className = 'udemy-dl-toast';
+    notification.className = 'ashrafee-dl-toast';
     notification.dataset.type = type;
     
     notification.innerHTML = `
-        <div class="udemy-dl-toast-content">
-            <div class="udemy-dl-toast-icon ${type}">
+        <div class="ashrafee-dl-toast-content">
+            <div class="ashrafee-dl-toast-icon ${type}">
                 <svg viewBox="0 0 24 24">${ICONS[type] || ICONS.info}</svg>
             </div>
-            <div class="udemy-dl-toast-message">${message}</div>
+            <div class="ashrafee-dl-toast-message">${message}</div>
         </div>
-        <div class="udemy-dl-toast-progress-bar">
-            <div class="udemy-dl-toast-progress-fill ${type}"></div>
+        <div class="ashrafee-dl-toast-progress-bar">
+            <div class="ashrafee-dl-toast-progress-fill ${type}"></div>
         </div>
     `;
     
@@ -212,7 +212,7 @@ function showNotification(message, type = 'info') {
     const duration = NOTIF_DURATION[type] || 3000;
     
     // Animate progress bar
-    const progressFill = notification.querySelector('.udemy-dl-toast-progress-fill');
+    const progressFill = notification.querySelector('.ashrafee-dl-toast-progress-fill');
     progressFill.animate([
         { transform: 'scaleX(1)' },
         { transform: 'scaleX(0)' }
@@ -222,7 +222,7 @@ function showNotification(message, type = 'info') {
     });
 
     setTimeout(() => {
-        notification.style.animation = 'udemy-dl-toast-exit 0.3s cubic-bezier(0.8, 0.2, 0.8, 1) forwards';
+        notification.style.animation = 'ashrafee-dl-toast-exit 0.3s cubic-bezier(0.8, 0.2, 0.8, 1) forwards';
         setTimeout(() => notification.remove(), 300);
     }, duration);
 }
@@ -232,13 +232,13 @@ let _statusWidget = null;
 function showStatusBar(message) {
     if (!_statusWidget) {
         _statusWidget = document.createElement('div');
-        _statusWidget.id = 'udemy-dl-status-widget';
+        _statusWidget.id = 'ashrafee-dl-status-widget';
         document.body.appendChild(_statusWidget);
     }
     _statusWidget.innerHTML = `
-        <div class="udemy-dl-pulse-dot"></div>
+        <div class="ashrafee-dl-pulse-dot"></div>
         <span>${message}</span>
-        <button class="udemy-dl-stop-btn" onclick="document.querySelector('#udemy-downloader-auto-button').click()">
+        <button class="ashrafee-dl-stop-btn" onclick="document.querySelector('#ashrafee-downloader-auto-button').click()">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
                 <path d="M6 6h12v12H6z"/>
             </svg>
@@ -429,6 +429,45 @@ async function getCourseId() {
     }
 }
 
+// DOM-based fallback: try videojs players and script tags for video URLs.
+// Extracted into a helper so it can be called from multiple paths in extractVideoUrl().
+async function _tryDOMFallbacks() {
+    try {
+        // Try to extract from window.videojs
+        if (window.videojs && window.videojs.getAllPlayers) {
+            const players = window.videojs.getAllPlayers();
+            for (const player of players) {
+                if (player.src() && player.src().includes('.mp4')) {
+                    console.log('Found video URL in videojs player:', player.src());
+                    return player.src();
+                }
+            }
+        }
+        
+        // Try to extract from player data in the page
+        const scripts = document.querySelectorAll('script');
+        for (const script of scripts) {
+            const content = script.textContent;
+            if (content.includes('"videoUrl"') || content.includes('"mp4Url"')) {
+                const videoUrlMatch = content.match(/"videoUrl"\s*:\s*"([^"]+)"/);
+                if (videoUrlMatch) {
+                    console.log('Found video URL in script tag:', videoUrlMatch[1]);
+                    return videoUrlMatch[1];
+                }
+                
+                const mp4UrlMatch = content.match(/"mp4Url"\s*:\s*"([^"]+)"/);
+                if (mp4UrlMatch) {
+                    console.log('Found MP4 URL in script tag:', mp4UrlMatch[1]);
+                    return mp4UrlMatch[1];
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Error in DOM fallbacks:', e);
+    }
+    return null;
+}
+
 // Extract video URL from Udemy API
 async function extractVideoUrl() {
     try {
@@ -468,12 +507,27 @@ async function extractVideoUrl() {
             }
         };
         
-        // Check if we're on a video page before making API calls
-        const hasVideo = document.querySelector('video');
-        if (!hasVideo) {
+        // ── PRIORITY 1: Check <video> element directly (like original extension) ──
+        // This catches videos that Udemy marks as "not available for download"
+        // but still streams via a direct MP4 URL in the player.
+        const videoElement = document.querySelector('video');
+        if (videoElement) {
+            if (videoElement.src && videoElement.src.includes('.mp4')) {
+                console.log('Found direct MP4 URL in video element (Priority 1):', videoElement.src);
+                return videoElement.src;
+            }
+            const earlySourceElements = videoElement.querySelectorAll('source');
+            for (const source of earlySourceElements) {
+                if (source.src && source.src.includes('.mp4')) {
+                    console.log('Found MP4 URL in source element (Priority 1):', source.src);
+                    return source.src;
+                }
+            }
+        } else {
             console.warn('No video element found, this might not be a video lecture.');
         }
         
+        // ── PRIORITY 2: Try the Udemy API ──
         // Try to get lecture and course IDs
         const lectureId = getLectureId();
         const courseId = await getCourseId();
@@ -481,7 +535,7 @@ async function extractVideoUrl() {
         if (!lectureId || !courseId) {
             console.error('Could not find lecture or course ID');
             
-            // Last resort: try to extract from player data
+            // Try to extract from player data or page source
             try {
                 const playerData = window.UDEMY_PLAYER_DATA;
                 if (playerData && playerData.mediaUrl) {
@@ -499,6 +553,10 @@ async function extractVideoUrl() {
             } catch (e) {
                 console.error('Error extracting from player data:', e);
             }
+            
+            // Even without IDs, try videojs players and script tags before giving up
+            const domUrl = await _tryDOMFallbacks();
+            if (domUrl) return domUrl;
             
             return null;
         }
@@ -528,21 +586,25 @@ async function extractVideoUrl() {
                     if (data.asset.asset_type !== 'Video') {
                         console.warn('Asset is not a video:', data.asset.asset_type);
                     } else {
-                        // Aggregate all MP4 sources from all possible locations in the API response
+                        // Aggregate all video sources from all possible locations in the API response
                         const allVideos = [];
+                        const hlsFallbackVideos = []; // HLS sources as last resort
 
-                        // 1. Check download_urls
+                        // 1. Check download_urls (direct MP4 download links — best quality)
                         if (data.asset.download_urls && data.asset.download_urls.Video) {
                             data.asset.download_urls.Video.forEach(v => {
                                 if (v.file) allVideos.push({ label: v.label, url: v.file });
                             });
                         }
 
-                        // 2. Check media_sources
+                        // 2. Check media_sources (streaming sources)
                         if (data.asset.media_sources) {
                             data.asset.media_sources.forEach(v => {
                                 if (v.type === 'video/mp4' || (v.src && (v.src.includes('.mp4') || v.src.includes('video/mp4')))) {
                                     allVideos.push({ label: v.label, url: v.src });
+                                } else if (v.src && (v.type === 'application/x-mpegURL' || v.src.includes('.m3u8') || v.src.includes('hls'))) {
+                                    // HLS streams — background.js can convert these via getMP4Url()
+                                    hlsFallbackVideos.push({ label: v.label, url: v.src });
                                 }
                             });
                         }
@@ -552,13 +614,17 @@ async function extractVideoUrl() {
                             data.asset.stream_urls.Video.forEach(v => {
                                 if (v.type === 'video/mp4' || (v.file && (v.file.includes('.mp4') || v.file.includes('video/mp4')))) {
                                     allVideos.push({ label: v.label, url: v.file });
+                                } else if (v.file && (v.type === 'application/x-mpegURL' || v.file.includes('.m3u8') || v.file.includes('hls'))) {
+                                    hlsFallbackVideos.push({ label: v.label, url: v.file });
                                 }
                             });
                         }
 
-                        if (allVideos.length > 0) {
-                            console.log('Aggregated video sources:', allVideos);
-                            const selectedVideo = selectPreferredVideo(allVideos);
+                        // Prefer MP4 sources, fall back to HLS if no MP4 found
+                        const videosToUse = allVideos.length > 0 ? allVideos : hlsFallbackVideos;
+                        if (videosToUse.length > 0) {
+                            console.log('Aggregated video sources:', videosToUse, allVideos.length > 0 ? '(MP4)' : '(HLS fallback)');
+                            const selectedVideo = selectPreferredVideo(videosToUse);
                             console.log('Selected video URL based on preferences:', selectedVideo);
                             return selectedVideo ? selectedVideo.url : null;
                         }
@@ -571,56 +637,9 @@ async function extractVideoUrl() {
             console.warn('Error with API v2 request:', error);
         }
         
-        // If API v2 fails, try extracting from the page
-        try {
-            // Try to extract from window.videojs
-            if (window.videojs && window.videojs.getAllPlayers) {
-                const players = window.videojs.getAllPlayers();
-                for (const player of players) {
-                    if (player.src() && player.src().includes('.mp4')) {
-                        console.log('Found video URL in videojs player:', player.src());
-                        return player.src();
-                    }
-                }
-            }
-            
-            // Try to extract from player data in the page
-            const scripts = document.querySelectorAll('script');
-            for (const script of scripts) {
-                const content = script.textContent;
-                if (content.includes('"videoUrl"') || content.includes('"mp4Url"')) {
-                    const videoUrlMatch = content.match(/"videoUrl"\s*:\s*"([^"]+)"/);
-                    if (videoUrlMatch) {
-                        console.log('Found video URL in script tag:', videoUrlMatch[1]);
-                        return videoUrlMatch[1];
-                    }
-                    
-                    const mp4UrlMatch = content.match(/"mp4Url"\s*:\s*"([^"]+)"/);
-                    if (mp4UrlMatch) {
-                        console.log('Found MP4 URL in script tag:', mp4UrlMatch[1]);
-                        return mp4UrlMatch[1];
-                    }
-                }
-            }
-        } catch (e) {
-            console.error('Error extracting from page:', e);
-        }
-
-        // Final Fallback: Try to get video URL directly from the video element if everything else failed
-        const videoElement = document.querySelector('video');
-        if (videoElement) {
-            if (videoElement.src && videoElement.src.includes('.mp4')) {
-                console.log('Found direct MP4 URL in video element (Fallback):', videoElement.src);
-                return videoElement.src;
-            }
-            const sourceElements = videoElement.querySelectorAll('source');
-            for (const source of sourceElements) {
-                if (source.src && source.src.includes('.mp4')) {
-                    console.log('Found MP4 URL in source element (Fallback):', source.src);
-                    return source.src;
-                }
-            }
-        }
+        // If API v2 returned no usable sources, try DOM-based fallbacks
+        const domFallbackUrl = await _tryDOMFallbacks();
+        if (domFallbackUrl) return domFallbackUrl;
         
         console.warn('No suitable video URL found in any source');
         return null;
@@ -734,7 +753,7 @@ function extractVideoTitle() {
         if (element) {
             // Remove any injected buttons from a clone to avoid polluting the text
             const cloned = element.cloneNode(true);
-            cloned.querySelectorAll('#udemy-downloader-header-button, #udemy-downloader-auto-button, #udemy-downloader-floating-button').forEach(el => el.remove());
+            cloned.querySelectorAll('#ashrafee-downloader-header-button, #ashrafee-downloader-auto-button, #ashrafee-downloader-floating-button').forEach(el => el.remove());
 
             let rawTitle = cloned.textContent.trim().replace(/\s+/g, ' ');
 
@@ -825,6 +844,8 @@ async function extractTextContent() {
             '.lecture-text-container',
             '.lecture-content',
             '[data-purpose="lecture-text-container"]',
+            '[data-purpose="text-viewer"]',
+            '[data-purpose="lecture-description"]',
             '.article-asset__body',
             '.show-more--content--3H5pT'
         ];
@@ -837,44 +858,11 @@ async function extractTextContent() {
             }
         }
         
-        // Method 3: Search for any text content on page
-        const mainContent = document.querySelector('main') || document.querySelector('.main-content') || document.body;
-        
-        if (mainContent) {
-            console.log('Extracting text from main content');
-            
-            // Exclude elements that don't contain useful content
-            const excludeSelectors = [
-                'header',
-                'footer',
-                'nav',
-                '.sidebar',
-                '.navigation',
-                '.controls',
-                '.player-container',
-                '.video-player',
-                'script',
-                'style'
-            ];
-            
-            // Copy content to avoid modifying original DOM
-            const contentClone = mainContent.cloneNode(true);
-            
-            // Remove excluded elements
-            excludeSelectors.forEach(selector => {
-                const elements = contentClone.querySelectorAll(selector);
-                elements.forEach(el => el.remove());
-            });
-            
-            // Extract text
-            return contentClone.textContent.trim().replace(/\s+/g, ' ');
-        }
-        
-        console.error('No text content found');
-        return 'No text content found in this lecture.';
+        console.warn('No text content found matching known selectors.');
+        return null;
     } catch (error) {
         console.error('Error extracting text content:', error);
-        return `Error extracting text content: ${error.message}`;
+        return null;
     }
 }
 
@@ -911,7 +899,7 @@ function downloadTextViaBackground(textContent, filename, courseName, sectionNam
             const b64 = btoa(unescape(encodeURIComponent(textContent)));
             const dataUrl = 'data:text/plain;base64,' + b64;
             chrome.runtime.sendMessage({
-                action: 'downloadVideo',   // reuses same handler
+                action: 'ashrafee_downloadVideo',   // reuses same handler
                 url: dataUrl,
                 title: filename,
                 courseName: courseName,
@@ -940,9 +928,9 @@ function downloadTextViaBackground(textContent, filename, courseName, sectionNam
 
 // Detect what type of content is on the current page
 function detectPageType() {
-    if (document.querySelector('.quiz-view--container--Mgl-c')) return 'quiz';
+    if (document.querySelector('.quiz-view--container--Mgl-c') || document.querySelector('[data-purpose="quiz-view"]')) return 'quiz';
     if (document.querySelector('video')) return 'video';
-    if (document.querySelector('.text-viewer--container--TFOCA')) return 'text';
+    if (document.querySelector('.text-viewer--container--TFOCA') || document.querySelector('[data-purpose="text-viewer"]') || document.querySelector('[data-purpose="lecture-text-container"]')) return 'text';
     return 'unknown';
 }
 
@@ -1162,19 +1150,45 @@ async function saveExternalLinksAsFile(links, lectureTitle, courseName, sectionN
 
 // Helper for button loading state
 function setDownloadButtonLoading(isLoading) {
-    document.querySelectorAll('#udemy-downloader-header-button, #udemy-downloader-button').forEach(btn => {
+    document.querySelectorAll('#ashrafee-downloader-header-button, #ashrafee-downloader-button').forEach(btn => {
         if (isLoading) {
             if (!btn.dataset.originalHtml) btn.dataset.originalHtml = btn.innerHTML;
-            btn.innerHTML = '<span class="udemy-dl-spinner" style="margin-right:6px"></span><span class="ud-btn-label">Fetching...</span>';
+            btn.innerHTML = '<span class="ashrafee-dl-spinner" style="margin-right:6px"></span><span class="ud-btn-label">Fetching...</span>';
             btn.style.pointerEvents = 'none';
             btn.style.opacity = '0.8';
+            btn.disabled = true;
         } else {
             if (btn.dataset.originalHtml) {
                 btn.innerHTML = btn.dataset.originalHtml;
             }
             btn.style.pointerEvents = 'auto';
             btn.style.opacity = '1';
+            btn.disabled = false;
         }
+    });
+}
+
+// Prevent duplicate spam
+const recentlyQueuedUrls = new Set();
+
+// Helper to send message with error tracking for resources
+function safeSendMessage(message) {
+    return new Promise((resolve) => {
+        chrome.runtime.sendMessage(message, response => {
+            if (chrome.runtime.lastError) {
+                console.error('safeSendMessage error:', chrome.runtime.lastError);
+                if (!window._hasShownMsgError) {
+                    showNotification('Background connection error. Try reloading.', 'error');
+                    window._hasShownMsgError = true;
+                }
+                resolve(false);
+            } else if (response && !response.success) {
+                console.error('safeSendMessage background error:', response.error);
+                resolve(false);
+            } else {
+                resolve(true);
+            }
+        });
     });
 }
 
@@ -1234,8 +1248,12 @@ function handleDownloadClick() {
                     await saveExternalLinksAsFile(domRes.links, lectureTitle, courseName, sectionName);
                     // Download any actual file attachments
                     for (const res of domRes.fileUrls) {
-                        chrome.runtime.sendMessage({
-                            action: 'downloadVideo',
+                        if (recentlyQueuedUrls.has(res.url)) continue;
+                        recentlyQueuedUrls.add(res.url);
+                        setTimeout(() => recentlyQueuedUrls.delete(res.url), 30000);
+                        
+                        safeSendMessage({
+                            action: 'ashrafee_downloadVideo',
                             url: res.url,
                             title: res.title,
                             courseName: courseName,
@@ -1252,7 +1270,15 @@ function handleDownloadClick() {
             const videoUrl = await extractVideoUrl();
 
             if (!videoUrl) {
-                // Maybe a video page that couldn't extract — try text fallback
+                // If this was detected as a video page (has <video> element), don't
+                // silently fall back to downloading a .txt file — that's the bug.
+                // Only try text fallback if there's genuinely no video element.
+                if (pageType === 'video') {
+                    console.error('Video element present but could not extract downloadable URL.');
+                    showNotification('Could not extract video URL. The video may be DRM-protected.', 'error');
+                    return resolve(false);
+                }
+                // For unknown page types, try text as a last resort
                 const textContent = await extractTextContent();
                 if (textContent) {
                     const textTitle = extractVideoTitle();
@@ -1266,11 +1292,21 @@ function handleDownloadClick() {
 
             const videoTitle = extractVideoTitle();
             const fullFilename = videoTitle + '.mp4';
+            
+            // Duplicate prevention
+            if (recentlyQueuedUrls.has(videoUrl)) {
+                console.log('Video already queued recently:', videoUrl);
+                showNotification('Video already queued', 'info');
+                return resolve(true);
+            }
+            recentlyQueuedUrls.add(videoUrl);
+            setTimeout(() => recentlyQueuedUrls.delete(videoUrl), 30000);
+            
             console.log('Sending video download:', { videoUrl, fullFilename, courseName, sectionName });
 
             // Download the video
             chrome.runtime.sendMessage({
-                action: 'downloadVideo',
+                action: 'ashrafee_downloadVideo',
                 url: videoUrl,
                 title: fullFilename,
                 courseName: courseName,
@@ -1279,14 +1315,17 @@ function handleDownloadClick() {
                 if (chrome.runtime.lastError) {
                     console.error('Error sending message:', chrome.runtime.lastError);
                     showNotification('Error starting download', 'error');
+                    recentlyQueuedUrls.delete(videoUrl);
                     resolve(false);
                 } else if (response && response.error) {
                     console.error('Download error:', response.error);
                     if (!response.error.includes('USER_CANCELED')) {
                         showNotification('Download error: '+ response.error, 'error');
                     }
+                    recentlyQueuedUrls.delete(videoUrl);
                     resolve(false);
                 } else if (response && response.canceled) {
+                    recentlyQueuedUrls.delete(videoUrl);
                     resolve(false);
                 } else {
                     showNotification('Video queued: '+ videoTitle, 'success');
@@ -1333,8 +1372,12 @@ function handleDownloadClick() {
                     
                     // Queue any actual file attachments for download
                     mergedFiles.forEach(res => {
-                        chrome.runtime.sendMessage({
-                            action: 'downloadVideo',
+                        if (recentlyQueuedUrls.has(res.url)) return;
+                        recentlyQueuedUrls.add(res.url);
+                        setTimeout(() => recentlyQueuedUrls.delete(res.url), 30000);
+                        
+                        safeSendMessage({
+                            action: 'ashrafee_downloadVideo',
                             url: res.url,
                             title: res.title,
                             courseName: courseName,
@@ -1407,15 +1450,15 @@ function getCurrentLectureUrl() {
 }
 
 function updateAutoButton(text, isActive) {
-    const btn = document.querySelector('#udemy-downloader-auto-button');
-    const label = document.querySelector('#udemy-downloader-auto-button .ud-btn-label');
+    const btn = document.querySelector('#ashrafee-downloader-auto-button');
+    const label = document.querySelector('#ashrafee-downloader-auto-button .ud-btn-label');
     if (label) label.textContent = text;
     if (btn) {
         if (isActive) {
-            btn.classList.add('udemy-dl-button-active');
+            btn.classList.add('ashrafee-dl-button-active');
             btn.style.background = '';
         } else {
-            btn.classList.remove('udemy-dl-button-active');
+            btn.classList.remove('ashrafee-dl-button-active');
             btn.style.background = '#FFFFFF';
         }
     }
@@ -1444,8 +1487,13 @@ async function startAutoDownload() {
     
     isAutoDownloading = true;
     autoDownloadCount = 0;
+    
+    // Estimate total lectures from sidebar
+    const totalLecturesEl = document.querySelectorAll('[data-purpose="curriculum-item-title"]');
+    const totalLectures = totalLecturesEl.length > 0 ? totalLecturesEl.length : '?';
+    
     updateAutoButton('Stop Auto Download', true);
-    showNotification('Auto Download Started!', 'success');
+    showNotification(`Auto Download Started! (~${totalLectures} lectures)`, 'success');
     
     while (isAutoDownloading) {
         // Wait for page content to stabilise
@@ -1457,6 +1505,7 @@ async function startAutoDownload() {
         const hasContent = await waitFor(() => {
             return !!document.querySelector('video') || 
                    !!document.querySelector('.text-viewer--container--TFOCA') ||
+                   !!document.querySelector('[data-purpose="text-viewer"]') ||
                    !!document.querySelector('[data-purpose="curriculum-item-0-0"]');
         }, 12000);
 
@@ -1466,11 +1515,24 @@ async function startAutoDownload() {
 
         autoDownloadCount++;
         const lecTitle = extractVideoTitle();
-        showStatusBar('Queuing lecture ' + autoDownloadCount + ': '+ lecTitle);
-        showNotification('Lecture ' + autoDownloadCount + ': '+ lecTitle, 'info');
+        showStatusBar(`Queuing lecture ${autoDownloadCount} of ${totalLectures}: ${lecTitle}`);
+        showNotification(`Lecture ${autoDownloadCount} of ${totalLectures}: ${lecTitle}`, 'info');
         
         // Trigger download for current lecture (blocking until queued)
-        await handleDownloadClick();
+        let success = await handleDownloadClick();
+        
+        // Simple 1-attempt retry on failure
+        if (!success && isAutoDownloading) {
+            console.warn(`Lecture ${autoDownloadCount} failed. Retrying in 5s...`);
+            showStatusBar(`Retrying lecture ${autoDownloadCount}...`);
+            await new Promise(r => setTimeout(r, 5000));
+            if (!isAutoDownloading) break;
+            success = await handleDownloadClick();
+            if (!success) {
+                console.error(`Lecture ${autoDownloadCount} failed again. Skipping.`);
+                showNotification(`Skipped lecture ${autoDownloadCount} (Extraction failed)`, 'error');
+            }
+        }
         
         if (!isAutoDownloading) break;
         
@@ -1533,10 +1595,10 @@ async function startAutoDownload() {
 
 // Add download button to page
 function addDownloadButton() {
-    if (document.querySelector('#udemy-downloader-floating-widget')) return;
+    if (document.querySelector('#ashrafee-downloader-floating-widget')) return;
 
     const widget = document.createElement('div');
-    widget.id = 'udemy-downloader-floating-widget';
+    widget.id = 'ashrafee-downloader-floating-widget';
     widget.style.cssText = `
         position: fixed;
         top: 180px;
@@ -1546,12 +1608,12 @@ function addDownloadButton() {
         flex-direction: column;
         gap: 8px;
         font-family: "Udemy Sans", "SF Pro Text", -apple-system, BlinkMacSystemFont, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
-        animation: udemy-dl-toast-enter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        animation: ashrafee-dl-toast-enter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     `;
 
     // Download Button
     const downloadButton = document.createElement('button');
-    downloadButton.id = 'udemy-downloader-header-button';
+    downloadButton.id = 'ashrafee-downloader-header-button';
     downloadButton.innerHTML = `
         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="margin-right:8px">
             <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
@@ -1579,7 +1641,7 @@ function addDownloadButton() {
 
     // Auto Download Button
     const autoDownloadButton = document.createElement('button');
-    autoDownloadButton.id = 'udemy-downloader-auto-button';
+    autoDownloadButton.id = 'ashrafee-downloader-auto-button';
     autoDownloadButton.innerHTML = '<span class="ud-btn-label">Auto Download</span>';
     autoDownloadButton.style.cssText = `
         background: #FFFFFF;
@@ -1616,7 +1678,7 @@ function observePageChanges() {
     // Create single observer for DOM changes
     const observer = new MutationObserver((mutations) => {
         // Check for the floating widget
-        const widget = document.querySelector('#udemy-downloader-floating-widget');
+        const widget = document.querySelector('#ashrafee-downloader-floating-widget');
         
         // If no widget exists and we're on a lecture page, re-add buttons
         if (!widget && isUdemyLecturePage()) {

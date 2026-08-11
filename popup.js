@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const prefQualitySelect = document.getElementById('prefQuality');
     const autoDLDelayInput = document.getElementById('autoDLDelay');
     const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    const resetStatsBtn = document.getElementById('resetStatsBtn');
 
     // Load settings
     chrome.storage.sync.get(['preferredQuality', 'autoDLDelay'], (result) => {
@@ -65,9 +66,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Reset statistics
+    if (resetStatsBtn) {
+        resetStatsBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset your download statistics?')) {
+                chrome.storage.local.set({ downloadCount: 0, downloadSize: 0 }, () => {
+                    updateStats();
+                });
+            }
+        });
+    }
+
     // Listen for messages from background script
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message.action === 'updateStats') {
+        if (message.action === 'ashrafee_updateStats') {
             updateStats();
         }
     });

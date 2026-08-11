@@ -19,12 +19,12 @@ function sanitizeFolderName(name) {
 function sanitizeFileName(name) {
     if (!name) return 'video';
     
-    // Extract extension
-    const extensionMatch = name.match(/\.(mp4|txt|pdf)$/i);
+    // Extract extension - handle all common resource types
+    const extensionMatch = name.match(/\.(mp4|txt|pdf|zip|rar|docx?|xlsx?|pptx?|mp3|png|jpe?g|gif|svg|csv)$/i);
     const extension = extensionMatch ? extensionMatch[0] : '.mp4';
     
     // Remove extension temporarily
-    let baseName = name.replace(/\.(mp4|txt|pdf)$/i, '');
+    let baseName = name.replace(/\.(mp4|txt|pdf|zip|rar|docx?|xlsx?|pptx?|mp3|png|jpe?g|gif|svg|csv)$/i, '');
     
     // Replace invalid characters with space or underscore
     let cleanName = baseName
@@ -272,15 +272,18 @@ async function downloadFile(url, filename, retryCount = 0) {
 
     return new Promise(async (resolve, reject) => {
         try {
+            // Convert HLS URL to direct MP4 URL if needed
+            const actualUrl = await getMP4Url(url);
+
             // Clean the filename
             const cleanedFilename = sanitizeFilePath(filename);
             console.log('Starting download for:', cleanedFilename);
             console.log('Original filename:', filename);
-            console.log('URL:', url);
+            console.log('URL:', actualUrl);
 
             // Configure download options
             const downloadOptions = {
-                url: url,
+                url: actualUrl,
                 filename: cleanedFilename,
                 conflictAction: 'uniquify',
                 saveAs: false  // Don't show save dialog, use the filename directly
@@ -336,8 +339,15 @@ async function downloadFile(url, filename, retryCount = 0) {
             console.error('Error in download process:', error);
             if (retryCount < maxRetries) {
                 console.log(`Retrying download (${retryCount + 1}/${maxRetries})...`);
-                await new Promise(resolve => setTimeout(resolve, retryDelay));
-                return downloadFile(url, filename, retryCount + 1);
+                await new Promise(r => setTimeout(r, retryDelay));
+                // Wait for the retry to complete and resolve/reject the current promise
+                try {
+                    const result = await downloadFile(url, filename, retryCount + 1);
+                    resolve(result);
+                } catch (e) {
+                    reject(e);
+                }
+                return;
             }
             reject(error);
         }
@@ -471,7 +481,7 @@ async function processDownloadQueue() {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('Background: Message received:', request);
 
-    if (request.action === 'downloadVideo') {
+    if (request.action === 'ashrafee_downloadVideo') {
         console.log('Background: Processing downloadVideo request');
         
         const { url, title, courseName, sectionName } = request;
