@@ -827,30 +827,69 @@ async function extractTextContent() {
             if (textElements.length > 0) {
                 // Collect text from child elements while preserving basic formatting
                 textElements.forEach(element => {
+                    const clone = element.cloneNode(true);
+                    
+                    // Extract links and append their URLs
+                    clone.querySelectorAll('a').forEach(a => {
+                        const href = a.getAttribute('href');
+                        const text = a.textContent.trim();
+                        if (href && href !== '#' && !href.startsWith('javascript:')) {
+                            const newText = document.createTextNode(`${text} (${href})`);
+                            a.parentNode.replaceChild(newText, a);
+                        }
+                    });
+
+                    const text = clone.textContent.trim();
+                    if (!text) return;
+
                     // Add heading if element is a heading
                     if (element.tagName.match(/^H[1-6]$/)) {
-                        textContent += '\n\n' + element.textContent.trim() + '\n\n';
+                        textContent += '\n\n' + text + '\n\n';
                     } 
                     // Add code with special formatting
                     else if (element.tagName === 'PRE' || element.tagName === 'CODE') {
-                        textContent += '\n\n```\n' + element.textContent.trim() + '\n```\n\n';
+                        textContent += '\n\n```\n' + text + '\n```\n\n';
                     } 
                     // Add quote
                     else if (element.tagName === 'BLOCKQUOTE') {
-                        textContent += '\n\n> ' + element.textContent.trim() + '\n\n';
+                        textContent += '\n\n> ' + text + '\n\n';
                     } 
                     // Add list item
                     else if (element.tagName === 'LI') {
-                        textContent += '\n- ' + element.textContent.trim();
+                        textContent += '\n- ' + text;
                     } 
                     // Add regular paragraph
                     else {
-                        textContent += '\n\n' + element.textContent.trim();
+                        textContent += '\n\n' + text;
+                    }
+                });
+
+                // Extract any embedded iFrames (like YouTube or Vimeo)
+                textContainer.querySelectorAll('iframe').forEach(iframe => {
+                    const src = iframe.getAttribute('src');
+                    if (src) {
+                        textContent += `\n\n[Embedded Video: ${src}]\n\n`;
                     }
                 });
             } else {
                 // If no specific child elements found, use full element text
-                textContent = textContainer.textContent.trim();
+                const clone = textContainer.cloneNode(true);
+                clone.querySelectorAll('a').forEach(a => {
+                    const href = a.getAttribute('href');
+                    if (href && href !== '#' && !href.startsWith('javascript:')) {
+                        const newText = document.createTextNode(`${a.textContent.trim()} (${href})`);
+                        a.parentNode.replaceChild(newText, a);
+                    }
+                });
+                textContent = clone.textContent.trim();
+                
+                // Extract any embedded iFrames in the fallback container
+                textContainer.querySelectorAll('iframe').forEach(iframe => {
+                    const src = iframe.getAttribute('src');
+                    if (src) {
+                        textContent += `\n\n[Embedded Video: ${src}]\n\n`;
+                    }
+                });
             }
             
             // Clean text (remove repeated empty lines, etc)
@@ -1559,8 +1598,18 @@ async function startAutoDownload() {
         
         if (!isAutoDownloading) break;
         
-        // Pause before navigating based on user settings
-        await new Promise(r => setTimeout(r, delayMs));
+        // Cooldown Mode: Prevent rate limits by pausing every 25 lectures
+        if (autoDownloadCount > 0 && autoDownloadCount % 25 === 0) {
+            showStatusBar(`Cooldown: Waiting 60s to prevent rate limits...`);
+            showNotification(`Cooldown Mode Activated (60s pause)`, 'info');
+            await new Promise(r => setTimeout(r, 60000));
+        }
+
+        if (!isAutoDownloading) break;
+        
+        // Pause before navigating based on user settings + human jitter (0-5s random)
+        const jitter = Math.random() * 5000;
+        await new Promise(r => setTimeout(r, delayMs + jitter));
         
         if (!isAutoDownloading) break;
         

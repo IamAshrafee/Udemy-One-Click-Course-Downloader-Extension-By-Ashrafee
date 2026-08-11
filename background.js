@@ -1,6 +1,5 @@
 // Global variables
 let lastSelectedPath = '';
-let downloadQueue = [];
 let isProcessingQueue = false;
 let currentDownloadId = null;
 let totalDownloaded = 0;
@@ -9,13 +8,37 @@ let totalErrors = 0;
 // Cross-browser support
 const browserApi = typeof browser !== 'undefined' ? browser : chrome;
 
+// Storage queue helpers
+async function getQueue() {
+    return new Promise(resolve => {
+        chrome.storage.local.get(['downloadQueue'], (result) => {
+            resolve(result.downloadQueue || []);
+        });
+    });
+}
+
+async function setQueue(queue) {
+    return new Promise(resolve => {
+        chrome.storage.local.set({ downloadQueue: queue }, resolve);
+    });
+}
+
+async function addToQueue(item) {
+    const queue = await getQueue();
+    queue.push(item);
+    await setQueue(queue);
+    processDownloadQueue(); // Start processing if not already
+}
+
 // Log when background script starts
 console.log('Background script loaded - Udemy One Click Course Downloader v1.1.1');
+processDownloadQueue(); // Resume any pending downloads on wake up
 
 // Clean folder name for safe path
 function sanitizeFolderName(name) {
     if (!name) return 'Unknown';
-    return name.replace(/[<>:"/\\|?*]/g, '_').trim();
+    let clean = name.replace(/[<>:"/\\|?*]/g, '_').trim();
+    return clean.length > 50 ? clean.substring(0, 50).trim() : clean;
 }
 
 // Clean filename for safe download (single filename)
@@ -35,9 +58,9 @@ function sanitizeFileName(name) {
         .replace(/\s+/g, ' ')           // Normalize spaces
         .trim();
 
-    // Limit length to 150 characters (leaving room for folder and extension)
-    if (cleanName.length > 150) {
-        cleanName = cleanName.substring(0, 150).trim();
+    // Limit length to 80 characters (leaving room for folder and extension)
+    if (cleanName.length > 80) {
+        cleanName = cleanName.substring(0, 80).trim();
     }
 
     // Remove leading/trailing dots and spaces
@@ -441,58 +464,49 @@ async function handleBulkDownload(videos, courseName) {
 
 // Process download queue
 async function processDownloadQueue() {
-    if (isProcessingQueue || downloadQueue.length === 0) return;
+    if (isProcessingQueue) return;
+
+    let queue = await getQueue();
+    if (queue.length === 0) return;
 
     isProcessingQueue = true;
     totalDownloaded = 0;
     totalErrors = 0;
     
-    const totalFiles = downloadQueue.length;
-    console.log(`\n Starting download queue. Total videos: ${totalFiles}`);
+    console.log(`\n Starting persistent download queue. Items: ${queue.length}`);
 
-    while (downloadQueue.length > 0) {
-        const { video, courseName, sectionName, index, total } = downloadQueue[0];
+    while (queue.length > 0) {
+        const item = queue[0];
         
         try {
-            let filename = video.title || 'video';
-            filename = filename.replace(/[<>:"/\\|?*]/g, '_');
-            
-            if (video.url.includes('hls-c.udemycdn.com')) {
-                filename += '.m3u8';
-            } else {
-                filename += '.mp4';
-            }
-
-            const cleanCourseName = sanitizeFolderName(courseName);
-            const cleanSectionName = sanitizeFolderName(sectionName);
-            const paddedIndex = (index + 1).toString().padStart(3, '0');
-            
-            filename = `Udemy/${cleanCourseName}/${cleanSectionName}/${paddedIndex}_${filename}`;
-
-            console.log(`\n Downloading video ${index + 1} of ${total}:`);
-            console.log(`Title: ${video.title}`);
-            console.log(`Path: ${filename}`);
-
-            await downloadFile(video.url, filename);
-            console.log(`Successfully downloaded video ${index + 1}`);
+            console.log(`\n Downloading from queue: ${item.filename}`);
+            await downloadFile(item.url, item.filename);
+            console.log(`Successfully downloaded`);
             totalDownloaded++;
-
-            showProgress(totalDownloaded, totalFiles);
-
-            // Wait between downloads
-            if (downloadQueue.length > 1) {
-                await wait(3000);
+            
+            // showProgress is defined elsewhere, we can pass queue lengths
+            showProgress(totalDownloaded, totalDownloaded + queue.length - 1);
+            
+            // Wait between downloads slightly
+            if (queue.length > 1) {
+                await wait(2000);
             }
         } catch (error) {
             if (error.message === 'USER_CANCELED') {
-                console.log('Download canceled by user');
-                break; // Stop bulk download if canceled intentionally
+                console.log('Download canceled by user. Clearing queue.');
+                queue = [];
+                await setQueue(queue);
+                break; // Stop download if canceled intentionally
             }
-            console.error(`Error downloading video ${index + 1}:`, error.message || error);
+            console.error(`Error downloading:`, error.message || error);
             totalErrors++;
-            showProgress(totalDownloaded, totalFiles);
         } finally {
-            downloadQueue.shift();
+            if (queue.length > 0) {
+                queue.shift();
+                await setQueue(queue);
+            }
+            // Refresh queue from storage in case new items were added
+            queue = await getQueue();
         }
     }
     
@@ -530,24 +544,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             filename = `Udemy/${cleanCourseName}/${cleanSectionName}/${title}`;
         }
 
-        console.log('Background: Starting download:', { url, filename });
+        console.log('Background: Queuing download:', { url, filename });
         
-        // Start download
-        downloadFile(url, filename)
-            .then((result) => {
-                // Check if download was canceled by user
-                if (result && result.canceled) {
-                    console.log('ℹ️ Background: Download was canceled by the user');
-                    sendResponse({ success: true, canceled: true });
-                } else {
-                    console.log('Background: Download completed successfully');
-                    sendResponse({ success: true });
-                }
-            })
-            .catch(error => {
-                console.error('Background: Download failed:', error);
-                sendResponse({ success: false, error: error.message });
-            });
+        addToQueue({ url, filename }).then(() => {
+            console.log('Background: Queued successfully');
+            sendResponse({ success: true });
+        }).catch(error => {
+            console.error('Background: Queue failed:', error);
+            sendResponse({ success: false, error: error.message });
+        });
 
         // Return true to indicate response will be sent asynchronously
         console.log('Background: Returning true for async response');
