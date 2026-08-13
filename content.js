@@ -996,7 +996,7 @@ function detectPageType() {
     return 'unknown';
 }
 
-// Extract quiz info as a readable text block
+// Extract quiz info as a readable text block (fallback for start page only)
 function extractQuizText() {
     try {
         const titleEl = document.querySelector('.quiz-view--container--Mgl-c .ud-heading-xxl');
@@ -1007,6 +1007,195 @@ function extractQuizText() {
         const meta = metaEl ? metaEl.textContent.trim() : '';
         return `${title}\n${meta}\n\n${desc}`;
     } catch(e) { return 'Quiz'; }
+}
+
+// Helper: click a button using full React-compatible event sequence
+function simulateClick(btn) {
+    if (!btn) return;
+    btn.scrollIntoView({ behavior: 'instant', block: 'center' });
+    btn.focus();
+    const eventParams = { bubbles: true, cancelable: true, view: window, button: 0, buttons: 1 };
+    ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'].forEach(type => {
+        const Cls = type.startsWith('pointer') ? PointerEvent : MouseEvent;
+        btn.dispatchEvent(new Cls(type, eventParams));
+    });
+    // Also try React fiber
+    try {
+        const rKey = Object.keys(btn).find(k => k.startsWith('__reactProps$') || k.startsWith('__reactEventHandlers$'));
+        if (rKey && btn[rKey] && btn[rKey].onClick) {
+            btn[rKey].onClick({ preventDefault: () => {}, stopPropagation: () => {}, target: btn, currentTarget: btn, nativeEvent: new MouseEvent('click') });
+        }
+    } catch(e) {}
+}
+
+// Wait for a DOM condition to become true, with a timeout
+function waitForDom(conditionFn, timeoutMs = 5000, intervalMs = 200) {
+    return new Promise(resolve => {
+        const start = Date.now();
+        const check = () => {
+            if (conditionFn()) return resolve(true);
+            if (Date.now() - start >= timeoutMs) return resolve(false);
+            setTimeout(check, intervalMs);
+        };
+        check();
+    });
+}
+
+// Extract the full quiz by navigating through all questions using Skip
+async function extractFullQuiz(courseName, sectionName) {
+    const quizContainer = document.querySelector('.quiz-view--container--Mgl-c');
+    if (!quizContainer) return null;
+
+    // --- Determine quiz title ---
+    const titleEl = quizContainer.querySelector('.ud-heading-xxl');
+    const quizTitle = titleEl ? titleEl.textContent.trim() : extractVideoTitle() || 'Quiz';
+
+    // --- Detect current state ---
+    const startBtn = quizContainer.querySelector('button[data-purpose="start-or-resume-quiz"]');
+    const questionForm = document.querySelector('form[data-testid="mc-quiz-question"]');
+
+    // Quiz is already finished (no start button, no question form)
+    if (!startBtn && !questionForm) {
+        console.log('Quiz appears to be finished/results page; cannot extract questions.');
+        return null;
+    }
+
+    // If on the start page, click Start/Resume first
+    if (startBtn && !questionForm) {
+        console.log('Quiz start page detected. Clicking start/resume button...');
+        showNotification('Starting quiz to extract questions...', 'info');
+        simulateClick(startBtn);
+        // Wait for the question form to appear
+        const appeared = await waitForDom(() => !!document.querySelector('form[data-testid="mc-quiz-question"]'), 6000, 200);
+        if (!appeared) {
+            console.warn('Timed out waiting for quiz question to appear after clicking start.');
+            return null;
+        }
+    }
+
+    // --- Figure out starting question info ---
+    const footerSpan = document.querySelector('footer > span');
+    let startingFrom = 1;
+    let totalQuestions = null;
+    if (footerSpan) {
+        // Text like "Question 1 of 8"
+        const match = footerSpan.textContent.match(/(\d+)\s+of\s+(\d+)/i);
+        if (match) {
+            startingFrom = parseInt(match[1], 10);
+            totalQuestions = parseInt(match[2], 10);
+        }
+    }
+    console.log(`Quiz: starting from Q${startingFrom}, total: ${totalQuestions}`);
+
+    const isMidQuiz = startingFrom > 1;
+    const questions = [];
+
+    // --- Loop through questions using Skip ---
+    let safety = 0;
+    const maxQuestions = totalQuestions || 200; // hard cap to prevent infinite loops
+
+    while (safety < maxQuestions + 5) {
+        safety++;
+
+        const form = document.querySelector('form[data-testid="mc-quiz-question"]');
+        if (!form) {
+            console.log('No question form found — quiz ended or navigated away.');
+            break;
+        }
+
+        // Read progress from footer
+        const fSpan = document.querySelector('footer > span');
+        let currentNum = questions.length + startingFrom;
+        let total = totalQuestions;
+        if (fSpan) {
+            const m = fSpan.textContent.match(/(\d+)\s+of\s+(\d+)/i);
+            if (m) { currentNum = parseInt(m[1], 10); total = parseInt(m[2], 10); }
+        }
+
+        // Read question text
+        const promptEl = form.querySelector('.mc-quiz-question--question-prompt--9cMw2');
+        const questionText = promptEl ? promptEl.textContent.trim() : form.querySelector('#question-prompt')?.textContent.trim() || '(Question text not found)';
+
+        // Read all answer choices
+        const answerEls = form.querySelectorAll('li.mc-quiz-question--answer--c9L0Q .mc-quiz-answer--answer-body--V-o8d');
+        const answers = Array.from(answerEls).map(el => el.textContent.trim()).filter(Boolean);
+
+        questions.push({ number: currentNum, text: questionText, answers });
+        console.log(`Captured Q${currentNum}: "${questionText.substring(0, 60)}..." (${answers.length} choices)`);
+
+        // Stop if this was the last question
+        if (total && currentNum >= total) {
+            console.log('Reached last question.');
+            break;
+        }
+
+        // Click Skip to go to next question
+        const skipBtn = document.querySelector('button[data-purpose="skip-question-button"]');
+        if (!skipBtn) {
+            console.log('No skip button found — may be end of quiz.');
+            break;
+        }
+        simulateClick(skipBtn);
+
+        // Wait for the next question to render (question number or form changes)
+        const prevNum = currentNum;
+        await waitForDom(() => {
+            const s = document.querySelector('footer > span');
+            if (!s) return false;
+            const m = s.textContent.match(/(\d+)\s+of\s+(\d+)/i);
+            return m && parseInt(m[1], 10) !== prevNum;
+        }, 3000, 150);
+
+        // Small extra buffer for React to fully render
+        await new Promise(r => setTimeout(r, 300));
+    }
+
+    if (questions.length === 0) return null;
+
+    // --- Build formatted output ---
+    const ANSWERLETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const SEP80 = '='.repeat(80);
+    const SEP80d = '-'.repeat(80);
+    const totalStr = totalQuestions ? `${totalQuestions} Questions` : `${questions.length} Questions extracted`;
+    const metaEl = document.querySelector('.start-page--quiz-info--gbMDJ');
+    const metaText = metaEl ? metaEl.textContent.trim() : '';
+
+    const lines = [
+        SEP80,
+        `  QUIZ: ${quizTitle}`,
+        `  ${metaText || totalStr}  |  Extracted by Udemy Downloader`,
+        SEP80,
+        '',
+        'NOTE: Correct answers are not shown. Udemy only reveals them after you',
+        '      select and check each answer. All choices are listed for study.',
+    ];
+
+    if (isMidQuiz) {
+        lines.push('');
+        lines.push(`NOTE: Quiz was in progress. Extraction started from Question ${startingFrom}.`);
+        lines.push('      Earlier questions are not included.');
+    }
+
+    questions.forEach(q => {
+        lines.push('');
+        lines.push(SEP80d);
+        lines.push(`Question ${q.number}: ${q.text}`);
+        lines.push(SEP80d);
+        if (q.answers.length === 0) {
+            lines.push('  (No answer choices found)');
+        } else {
+            q.answers.forEach((ans, i) => {
+                lines.push(`  ${ANSWERLETTERS[i] || (i + 1) + '.'}) ${ans}`);
+            });
+        }
+    });
+
+    lines.push('');
+    lines.push(SEP80);
+    lines.push(`  End of Quiz — ${questions.length} question(s) captured`);
+    lines.push(SEP80);
+
+    return { title: quizTitle, content: lines.join('\n') };
 }
 
 // Extract resources by programmatically opening the Resources dropdown (lazy-rendered)
@@ -1278,15 +1467,33 @@ function handleDownloadClick() {
 
             // ── QUIZ ──────────────────────────────────────────────────────────
             if (pageType === 'quiz') {
-                const quizTitle = (
-                    document.querySelector('.quiz-view--container--Mgl-c .ud-heading-xxl') ||
-                    document.querySelector('[data-purpose="item-title"]')
-                );
-                const title = quizTitle ? quizTitle.textContent.trim() : 'Quiz';
-                const quizText = extractQuizText();
-                showNotification('Saving quiz: '+ title, 'info');
-                await downloadTextViaBackground(quizText, title + '.txt', courseName, sectionName);
-                showNotification('Quiz saved: '+ title, 'success');
+                showNotification('Extracting quiz questions...', 'info');
+                const quizResult = await extractFullQuiz(courseName, sectionName);
+
+                if (!quizResult) {
+                    // Quiz already finished or unrecognized state — fall back to start-page text
+                    const quizContainer = document.querySelector('.quiz-view--container--Mgl-c');
+                    const hasStartBtn = quizContainer && quizContainer.querySelector('button[data-purpose="start-or-resume-quiz"]');
+                    if (!hasStartBtn) {
+                        // Fully finished / results page
+                        showNotification('Quiz already completed. Questions unavailable.', 'error');
+                        return resolve(false);
+                    }
+                    // Could not extract for another reason — save description fallback
+                    const titleEl = document.querySelector('.quiz-view--container--Mgl-c .ud-heading-xxl') ||
+                                    document.querySelector('[data-purpose="item-title"]');
+                    const title = titleEl ? titleEl.textContent.trim() : 'Quiz';
+                    const quizText = extractQuizText();
+                    showNotification('Saving quiz description: ' + title, 'info');
+                    await downloadTextViaBackground(quizText, title + '.txt', courseName, sectionName);
+                    showNotification('Quiz description saved: ' + title, 'success');
+                    return resolve(true);
+                }
+
+                const filename = quizResult.title + '.txt';
+                showNotification('Saving quiz: ' + quizResult.title, 'info');
+                await downloadTextViaBackground(quizResult.content, filename, courseName, sectionName);
+                showNotification('Quiz saved: ' + quizResult.title + ' (' + filename + ')', 'success');
                 return resolve(true);
             }
 
