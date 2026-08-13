@@ -2,7 +2,7 @@
    "manifest_version": 3,
    "name": "Udemy One-Click Course Downloader by Ashrafee",
    "short_name": "Udemy Downloader",
-   "version": "1.1.2",
+   "version": "1.1.3",
    "minimum_chrome_version": "88",
    "description": "Download videos, text lectures, quizzes, and resources from Udemy with a single click or automatically download entire courses.",
    "author": "Ashrafee",
