@@ -4,6 +4,7 @@ let isProcessingQueue = false;
 let currentDownloadId = null;
 let totalDownloaded = 0;
 let totalErrors = 0;
+let queueUpdatePromise = Promise.resolve();
 
 // Cross-browser support
 const browserApi = typeof browser !== 'undefined' ? browser : chrome;
@@ -23,11 +24,14 @@ async function setQueue(queue) {
     });
 }
 
-async function addToQueue(item) {
-    const queue = await getQueue();
-    queue.push(item);
-    await setQueue(queue);
-    processDownloadQueue(); // Start processing if not already
+function addToQueue(item) {
+    queueUpdatePromise = queueUpdatePromise.then(async () => {
+        const queue = await getQueue();
+        queue.push(item);
+        await setQueue(queue);
+        processDownloadQueue(); // Start processing if not already
+    });
+    return queueUpdatePromise;
 }
 
 // Log when background script starts
@@ -465,11 +469,14 @@ async function handleBulkDownload(videos, courseName) {
 // Process download queue
 async function processDownloadQueue() {
     if (isProcessingQueue) return;
+    isProcessingQueue = true;
 
     let queue = await getQueue();
-    if (queue.length === 0) return;
+    if (queue.length === 0) {
+        isProcessingQueue = false;
+        return;
+    }
 
-    isProcessingQueue = true;
     totalDownloaded = 0;
     totalErrors = 0;
     
@@ -501,12 +508,13 @@ async function processDownloadQueue() {
             console.error(`Error downloading:`, error.message || error);
             totalErrors++;
         } finally {
-            if (queue.length > 0) {
-                queue.shift();
-                await setQueue(queue);
+            // Get fresh queue from storage to avoid overwriting newly added items
+            let currentQueue = await getQueue();
+            if (currentQueue.length > 0) {
+                currentQueue.shift();
+                await setQueue(currentQueue);
             }
-            // Refresh queue from storage in case new items were added
-            queue = await getQueue();
+            queue = currentQueue;
         }
     }
     
