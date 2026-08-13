@@ -1719,7 +1719,7 @@ function getCurrentLectureUrl() {
 }
 
 // Find the next lecture button in the sidebar (fallback for quizzes where the main Next button is hidden)
-function getNextSidebarLectureBtn() {
+async function getNextSidebarLectureBtn() {
     const currentLi = document.querySelector('li[aria-current="true"]');
     if (!currentLi) return null;
     
@@ -1735,6 +1735,17 @@ function getNextSidebarLectureBtn() {
     
     let nextSection = currentSection.nextElementSibling;
     while (nextSection) {
+        // Check if this section is expanded
+        const toggleBtn = nextSection.querySelector('.js-panel-toggler');
+        const isExpanded = toggleBtn && toggleBtn.getAttribute('aria-expanded') === 'true';
+        
+        if (!isExpanded && toggleBtn) {
+            console.log('Opening next section accordion to find next lecture...');
+            simulateClick(toggleBtn);
+            // Wait up to 3 seconds for React to render the list items inside the section
+            await waitForDom(() => !!nextSection.querySelector('li [data-purpose^="curriculum-item-"]'), 3000, 150);
+        }
+
         const firstItem = nextSection.querySelector('li [data-purpose^="curriculum-item-"]');
         if (firstItem) {
             return firstItem;
@@ -1864,7 +1875,7 @@ async function startAutoDownload() {
 
         if (!nextBtn || isDisabled || isCompletedByProgress) {
             // Fallback: Try to find the next lecture in the sidebar (crucial for quizzes where go-to-next is hidden)
-            const sidebarNextBtn = getNextSidebarLectureBtn();
+            const sidebarNextBtn = await getNextSidebarLectureBtn();
             
             if (sidebarNextBtn && !isCompletedByProgress) {
                 console.log('No go-to-next button found (likely in quiz). Falling back to sidebar navigation.');
