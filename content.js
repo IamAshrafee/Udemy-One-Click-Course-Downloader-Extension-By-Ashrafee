@@ -1718,6 +1718,33 @@ function getCurrentLectureUrl() {
     return window.location.href;
 }
 
+// Find the next lecture button in the sidebar (fallback for quizzes where the main Next button is hidden)
+function getNextSidebarLectureBtn() {
+    const currentLi = document.querySelector('li[aria-current="true"]');
+    if (!currentLi) return null;
+    
+    // 1. Try next sibling in current section
+    let nextLi = currentLi.nextElementSibling;
+    if (nextLi) {
+        return nextLi.querySelector('[data-purpose^="curriculum-item-"]');
+    }
+    
+    // 2. Try first item in next section
+    let currentSection = currentLi.closest('[data-purpose^="section-panel"]');
+    if (!currentSection) return null;
+    
+    let nextSection = currentSection.nextElementSibling;
+    while (nextSection) {
+        const firstItem = nextSection.querySelector('li [data-purpose^="curriculum-item-"]');
+        if (firstItem) {
+            return firstItem;
+        }
+        nextSection = nextSection.nextElementSibling;
+    }
+    
+    return null;
+}
+
 function updateAutoButton(text, isActive) {
     const btn = document.querySelector('#ashrafee-downloader-auto-button');
     const label = document.querySelector('#ashrafee-downloader-auto-button .ud-btn-label');
@@ -1821,14 +1848,14 @@ async function startAutoDownload() {
         if (!isAutoDownloading) break;
         
         // Check if there is a next lecture and it is not disabled
-        const nextBtn = document.querySelector('button[data-purpose="go-to-next"], div[data-purpose="go-to-next"]');
+        let nextBtn = document.querySelector('button[data-purpose="go-to-next"], div[data-purpose="go-to-next"]');
         
         // Also check if Udemy is showing the "Course Completed" progress state
         const progressEl = document.querySelector('[data-purpose="progress-popover-text"]');
         const isCompletedByProgress = progressEl && (progressEl.textContent.includes('100%') || 
             (progressEl.textContent.match(/(\d+) of \1 complete/)));
 
-        const isDisabled = nextBtn && (
+        let isDisabled = nextBtn && (
             nextBtn.disabled || 
             nextBtn.getAttribute('aria-disabled') === 'true' || 
             nextBtn.classList.contains('disabled') ||
@@ -1836,18 +1863,27 @@ async function startAutoDownload() {
         );
 
         if (!nextBtn || isDisabled || isCompletedByProgress) {
-            isAutoDownloading = false;
-            updateAutoButton('Auto Download', false);
-            hideStatusBar();
-            showNotification('All ' + autoDownloadCount + ' lectures queued! Course Completed.', 'success');
-            break;
+            // Fallback: Try to find the next lecture in the sidebar (crucial for quizzes where go-to-next is hidden)
+            const sidebarNextBtn = getNextSidebarLectureBtn();
+            
+            if (sidebarNextBtn && !isCompletedByProgress) {
+                console.log('No go-to-next button found (likely in quiz). Falling back to sidebar navigation.');
+                nextBtn = sidebarNextBtn;
+                isDisabled = false;
+            } else {
+                isAutoDownloading = false;
+                updateAutoButton('Auto Download', false);
+                hideStatusBar();
+                showNotification('All ' + autoDownloadCount + ' lectures queued! Course Completed.', 'success');
+                break;
+            }
         }
         
         // Record current URL to detect successful navigation
         const urlBefore = getCurrentLectureUrl();
         
         showNotification('Going to next lecture...', 'info');
-        nextBtn.click();
+        simulateClick(nextBtn);
         
         // Wait for URL to change (Udemy SPA navigation) — up to 10s
         const navigated = await waitFor(() => getCurrentLectureUrl() !== urlBefore, 10000);
