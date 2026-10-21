@@ -42,7 +42,7 @@ if exist "%ZIP_PATH%" (
 
 echo [INFO] Zipping extension files...
 
-powershell -NoProfile -Command "Compress-Archive -Path 'manifest.json', 'background.js', 'content.js', 'popup.html', 'popup.js', 'images' -DestinationPath '%ZIP_PATH%' -Force"
+powershell -NoProfile -Command "Compress-Archive -Path 'manifest.json', 'background.js', 'content.js', 'popup.html', 'popup.js', 'offscreen.html', 'offscreen.js', 'hls', 'images' -DestinationPath '%ZIP_PATH%' -Force"
 
 if exist "%ZIP_PATH%" (
     echo.
