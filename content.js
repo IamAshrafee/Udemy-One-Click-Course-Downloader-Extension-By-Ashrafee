@@ -274,6 +274,50 @@ function hideStatusBar() {
     }
 }
 
+// Progress of HLS videos being assembled by the background worker
+let _progressWidget = null;
+function showDownloadProgress(title, text) {
+    if (!_progressWidget) {
+        _progressWidget = document.createElement('div');
+        _progressWidget.id = 'ashrafee-dl-progress-widget';
+        _progressWidget.style.cssText = 'position:fixed;bottom:80px;left:24px;z-index:9998;max-width:420px;' +
+            'background:#FFFFFF;border:1px solid #d1d7dc;border-radius:4px;padding:10px 16px;' +
+            'box-shadow:0 4px 12px rgba(0,0,0,0.15);color:#1c1d1f;font-size:13px;' +
+            'font-family:"Udemy Sans","SF Pro Text",-apple-system,BlinkMacSystemFont,Roboto,"Segoe UI",Helvetica,Arial,sans-serif;';
+        document.body.appendChild(_progressWidget);
+    }
+    _progressWidget.textContent = '';
+    const strong = document.createElement('div');
+    strong.style.fontWeight = '700';
+    strong.textContent = title;
+    const line = document.createElement('div');
+    line.textContent = text;
+    _progressWidget.append(strong, line);
+}
+
+function hideDownloadProgress() {
+    if (_progressWidget) {
+        _progressWidget.remove();
+        _progressWidget = null;
+    }
+}
+
+chrome.runtime.onMessage.addListener((message) => {
+    if (!message || message.action !== 'ashrafee_progress') return;
+    if (message.state === 'progress') {
+        showDownloadProgress(message.title, message.text);
+    } else if (message.state === 'saving') {
+        showDownloadProgress(message.title, 'Saving file...');
+    } else if (message.state === 'done') {
+        hideDownloadProgress();
+        showNotification('Saved: ' + message.title, 'success');
+    } else if (message.state === 'error') {
+        hideDownloadProgress();
+        const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        showNotification('Failed: ' + esc(message.title) + ' - ' + esc(message.message), 'error');
+    }
+});
+
 
 // Extract lecture ID from URL
 function getLectureId() {
